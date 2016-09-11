@@ -1,0 +1,6 @@
+{
+  "name": "Perspective Slider",
+  "tagline": "Owl carousel plugin for perspective 3d effect",
+  "body": "# owl-3d\r\n\r\n## options:\r\n\r\n### zoomScale:\r\n\r\nType: number\r\nDefault: -200\r\n\r\nScale of 3D effect (perspective zoom). 0 value means no depth.\r\n\r\n### opacityScale:\r\n\r\nType: number\r\nDefault: 0.2\r\n\r\nFading effect of side items.\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
