@@ -119,6 +119,7 @@
     PerspectiveCarousel.prototype.perspectiveScroll = function(coordinate) {
         var dir = (this._core.state.direction === 'left' ? -1 : +1),
             half = Math.floor(this._core.settings.items / 2),
+            coordinate = (this._core.settings.items % 2) == 0 ? parseFloat(coordinate) + (item_width / 2) : coordinate, //fix for even number of item
             current_pos = parseFloat(coordinate / this._core._coordinates[0]).toFixed(2),
             tween = 0,
             center = Math.ceil(current_pos) + half;
@@ -127,7 +128,7 @@
         //   return;
         // }
 
-        console.log("current_pos",current_pos);
+        console.log("coordinate",coordinate);
 
         if (this._core.state.direction === 'right') {
             center = Math.ceil(current_pos) + half;
