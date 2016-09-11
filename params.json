@@ -1,6 +1,6 @@
 {
   "name": "Perspective Slider",
   "tagline": "Owl carousel plugin for perspective 3d effect",
-  "body": "# owl-3d\r\nAn awesome plugin to add perspective 3d effect to owl carousel with a bit of witchcraft of CSS3.\r\n\r\n<img src=http://imgur.com/a/lpKL5>\r\n## options:\r\n\r\n### zoomScale:\r\n\r\nType: number\r\nDefault: -200\r\n\r\nScale of 3D effect (perspective zoom). 0 value means no depth.\r\n\r\n### opacityScale:\r\n\r\nType: number\r\nDefault: 0.2\r\n\r\nFading effect of side items. For no fading put 0.\r\n",
+  "body": "# owl-3d\r\nAn awesome plugin to add perspective 3d effect to owl carousel with a bit of witchcraft of CSS3.\r\n\r\n<img src=http://i.imgur.com/U6ztrWj.gif>\r\n## options:\r\n\r\n### zoomScale:\r\n\r\nType: number\r\nDefault: -200\r\n\r\nScale of 3D effect (perspective zoom). 0 value means no depth.\r\n\r\n### opacityScale:\r\n\r\nType: number\r\nDefault: 0.2\r\n\r\nFading effect of side items. For no fading put 0.\r\n",
   "note": "Don't delete this file! It's used internally to help with page regeneration."
 }
