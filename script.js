@@ -124,10 +124,6 @@
             tween = 0,
             center = Math.ceil(current_pos) + half;
 
-        // if (current_pos < 0) {
-        //   return;
-        // }
-
         console.log("coordinate",coordinate);
 
         if (this._core.state.direction === 'right') {
@@ -137,6 +133,14 @@
             center = Math.floor(current_pos) + half;
             tween = (current_pos) - parseInt(current_pos);
         }
+
+        //fix for tween when coordinate is positive
+        if (tween < 0) {
+          tween = Math.abs(tween);
+          tween = 1 - tween;
+        }
+
+        console.log("center", center);
 
         console.log("tween", tween);
 
