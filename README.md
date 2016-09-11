@@ -1,5 +1,7 @@
 # owl-3d
 An awesome plugin to add perspective 3d effect to owl carousel with a bit of witchcraft of CSS3.
+
+![Boss carousel scroll example](images/2016/09/boss.gif)
 ## options:
 
 ### zoomScale:
