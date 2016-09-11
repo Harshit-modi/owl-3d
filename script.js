@@ -2,7 +2,7 @@
 
     var item_width, item_count, half, dim, distZ, $owlItems, opacity;
 
-    var Circular = function(carousel) {
+    var PerspectiveCarousel = function(carousel) {
 
         /**
          * Reference to the core.
@@ -13,7 +13,7 @@
         console.log(carousel);
 
         // set the default options
-    		this._core.options = $.extend({}, Circular.Defaults, this._core.options);
+        this._core.options = $.extend({}, PerspectiveCarousel.Defaults, this._core.options);
 
         /**
          * All event handlers.
@@ -34,156 +34,111 @@
      * Default options.
      * @public
      */
-    Circular.Defaults = {
-      zoomScale: -200,
-      opacityScale: 0.2
-    }
-    //methods:
+    PerspectiveCarousel.Defaults = {
+            zoomScale: -200,
+            opacityScale: 0.2
+        }
+        //methods:
 
-    Circular.prototype.init = function(e) {
+    PerspectiveCarousel.prototype.init = function(e) {
 
         item_width = this._core.width() / this._core.options.items;
         item_count = this._core.options.items;
         half = parseInt(item_count / 2);
         dim = item_width * 2;
         distZ = this._core.options.zoomScale;
-        $owlItems = this._core.$element.find(".owl-item"),
+        $owlItems = this._core.$stage.children(),
         opacity = this._core.options.opacityScale;
 
-        this.scroll(0);
+        this.perspectiveScroll(this._core.getTransformProperty());
 
-        /*override owl onDragMove method*/
-        var originalOnDragMove = this._core.onDragMove;
-
-        this._core.onDragMove = function() {
-
-            if (!this.state.isTouch) {
-                return;
-            }
-
-            if (this.state.isScrolling) {
-                return;
-            }
-
-            originalOnDragMove.apply(this, arguments);
-            if (this.drag.distance !== 0) {
-                this._plugins.circular.scroll(this.drag.distance, true);
-            }
-
-        }
-
-        /*override owl onDragMove method*/
-        var originalOnDragEnd = this._core.onDragEnd;
-
-        this._core.onDragEnd = function() {
-
-            if (!this.state.isTouch) {
-                return;
-            }
-
-            /*set animation speed*/
-            this.speed(this.settings.dragEndSpeed || this.settings.smartSpeed);
-
-            /*auto scroll to position*/
-            originalOnDragEnd.apply(this, arguments);
-            this._plugins.circular.scroll(0);
-        }
-
+        /*override owl animate method*/
         var originalAnimate = this._core.animate;
 
         this._core.animate = function() {
-            /*auto scroll to position*/
             originalAnimate.apply(this, arguments);
+            //method for perspective 3d animation
+            this._plugins.perspectiveCarousel.perspectiveScroll(arguments[0]);
         }
 
-        var circular = this;
+        var perspectiveCarousel = this;
 
         /*Go to clicked item*/
         $owlItems.each(function(index, item) {
             $(item).click(function(e) {
-              circular._core.speed(500);
-                circular._core.to(circular._core.relative(index), 500);
-                circular.jumpTo(index);
+                var owlCore = perspectiveCarousel._core,
+                    endItems = false;
+
+                if (owlCore.state.inMotion || Math.abs(owlCore.drag.distance) > 1) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+
+                //hack to make continuous animation for end elements
+                if (owlCore.settings.loop) {
+                    if (index < owlCore.minimum()) {
+                        var revert = owlCore.current() + owlCore._items.length,
+                            distance = index - owlCore.current();
+                        owlCore.reset(revert);
+                        window.clearTimeout(owlCore.e._goToLoop);
+                        owlCore.e._goToLoop = window.setTimeout(function() {
+                            owlCore.speed(owlCore.duration(owlCore.current(), revert + distance, 300));
+                            owlCore.current(revert + distance);
+                            console.log(revert + distance);
+                            owlCore.update();
+                        }, 30);
+                        endItems = true;
+                    } else if (index >= owlCore.maximum()) {
+                        var revert = owlCore.current() - owlCore._items.length,
+                            distance = index - owlCore.current();
+                        owlCore.reset(revert);
+                        window.clearTimeout(owlCore.e._goToLoop);
+                        owlCore.e._goToLoop = window.setTimeout(function() {
+                            owlCore.speed(owlCore.duration(owlCore.current(), revert + distance, 300));
+                            owlCore.current(revert + distance);
+                            console.log(revert + distance);
+                            owlCore.update();
+                        }, 30);
+                        endItems = true;
+                    }
+                }
+
+                if (!endItems) {
+                    owlCore.speed(300);
+                    owlCore.to(owlCore.relative(index), 300);
+                }
             })
         });
     }
 
     /**
-     * animate to target element
-     * @param  {number} x [absolute position of target element]
-     */
-    Circular.prototype.jumpTo = function(x) {
-        var distance = x - this._core.current(),
-            revert = this._core.current(),
-            before = this._core.current(),
-            after = this._core.current() + distance,
-            direction = before - after < 0 ? true : false,
-            items = this._core._clones.length + this._core._items.length;
-
-        if (after < this._core.settings.items && direction === false) {
-            revert = before + this._core._items.length;
-            this._core.reset(revert);
-        } else if (after >= items - this._core.settings.items && direction === true) {
-            revert = before - this._core._items.length;
-            this._core.reset(revert);
-        }
-        console.log("revert", revert);
-
-        var center = revert + distance,
-            tween = 0,
-            dir = (this._core.state.direction === 'left' ? -1 : +1);
-
-        /*center element*/
-        $($owlItems[center]).css({
-            transform: "translateZ(" + (distZ * tween) + "px)",
-            transition: (this._core.speed() / 1000) + 's',
-            opacity: (1 - (opacity * tween))
-        });
-
-        /*loop through side elements*/
-
-        /*Right elements*/
-        for (var i = center + 1; i < $owlItems.length; i++) {
-            $($owlItems[i]).css({
-                transform: "translateZ(" + (distZ * ((i - center) - (-dir * tween))) + "px)",
-                transition: 'transform ' + (this._core.speed() / 1000) + 's',
-                opacity: (1 - (opacity * ((i - center) - (-dir * tween))))
-            });
-        }
-
-        /*Left elements*/
-        for (var i = center - 1; i >= 0; i--) {
-            $($owlItems[i]).css({
-                transform: "translateZ(" + (distZ * ((center - i) + (-dir * tween))) + "px)",
-                transition: 'transform ' + (this._core.speed() / 1000) + 's',
-                opacity: (1 - (opacity * ((center - i) + (-dir * tween))))
-            });
-        }
-    }
-
-    /**
      * animating z translation on dragging carousel
-     * @param {Number} coordinate - distance dragged in pixels.
+     * @param {Number} coordinate - coordinate of owl stage in pixels.
      */
-    Circular.prototype.scroll = function(x, dragMove) {
-        var delta = x,
-            dir = (this._core.state.direction === 'left' ? -1 : +1),
-            tween = dir * (delta * 2) / dim,
-            moveX = -dir * Math.abs(parseInt(delta / item_width)),
-            center_item = this._core.$element.find(".owl-item.center").index() + moveX,
-            center = this._core.normalize(center_item);
+    PerspectiveCarousel.prototype.perspectiveScroll = function(coordinate) {
+        var dir = (this._core.state.direction === 'left' ? -1 : +1),
+            half = Math.floor(this._core.settings.items / 2),
+            current_pos = parseFloat(coordinate / this._core._coordinates[0]).toFixed(2),
+            tween = 0,
+            center = Math.ceil(current_pos) + half;
 
-        if (dragMove && this._core.settings.loop) {
-            if ((center_item <= this._core.minimum()) && (this._core.state.direction === 'right')) {
-                center = this._core.maximum() - (this._core.minimum() - center_item);
-            } else if ((center_item >= this._core.maximum()) && (this._core.state.direction === 'left')) {
-                center = this._core.minimum() + (center_item - this._core.maximum());
-            }
+        // if (current_pos < 0) {
+        //   return;
+        // }
+
+        console.log("current_pos",current_pos);
+
+        if (this._core.state.direction === 'right') {
+            center = Math.ceil(current_pos) + half;
+            tween = Math.ceil(current_pos) - (current_pos);
+        } else if (this._core.state.direction === 'left') {
+            center = Math.floor(current_pos) + half;
+            tween = (current_pos) - parseInt(current_pos);
         }
-        // console.log("scroll ", center);
-        tween = tween - parseInt(tween);
+
         console.log("tween", tween);
-        // console.log(this._core.drag.currentX);
+
 
         /*center element*/
         $($owlItems[center]).css({
@@ -213,6 +168,6 @@
         }
     };
 
-    $.fn.owlCarousel.Constructor.Plugins.Circular = Circular;
+    $.fn.owlCarousel.Constructor.Plugins.PerspectiveCarousel = PerspectiveCarousel;
 
 }(window.Zepto || window.jQuery, window, document))

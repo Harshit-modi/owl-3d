@@ -982,6 +982,7 @@
 	 * @param {Number} coordinate - The coordinate in pixels.
 	 */
 	Owl.prototype.animate = function(coordinate) {
+
 		this.trigger('translate');
 		this.state.inMotion = this.speed() > 0;
 
@@ -1269,11 +1270,15 @@
 				direction = before - after < 0 ? true : false,
 				items = this._clones.length + this._items.length;
 
+				console.log("after",after);
+
 			if (after < this.settings.items && direction === false) {
 				revert = before + this._items.length;
+				console.log("revert",revert);
 				this.reset(revert);
 			} else if (after >= items - this.settings.items && direction === true) {
 				revert = before - this._items.length;
+				console.log("revert",revert);
 				this.reset(revert);
 			}
 			window.clearTimeout(this.e._goToLoop);
